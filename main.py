@@ -41,14 +41,17 @@ def run(dir):
     R = params['camera_rotation'].reshape(3,3)
     T = params['camera_translation'].reshape(3)
     H, W = params['size']
-    focal_length = params['focal_length']
-    K = np.array([[focal_length, 0, W/2],
-                  [0, focal_length, H/2],
+    fx = params['focal_length_x']
+    fy = params['focal_length_y']
+    cx = params['center_x']
+    cy = params['center_y']
+    K = np.array([[fx, 0, cx],
+                  [0, fy, cy],
                   [0, 0, 1]])
 
     vis = o3d.visualization.VisualizerWithVertexSelection()
     vis.create_window(window_name='Vertex Annotation Tool', width=W, height=H)
-
+    
     mesh.rotate(np.diag([1, -1, -1.] @ R), center=(0, 0, 0))
     mesh.translate(np.diag([1, 1, 1.]) @ T)
     
@@ -64,8 +67,13 @@ def run(dir):
     camera_params.extrinsic = np.eye(4) 
     view_ctrl.convert_from_pinhole_camera_parameters(camera_params, True)
 
-    img = cv2.imread(os.path.join(dir, '000.jpg'))
-    img_copy = img.copy() 
+    if not os.path.exists(os.path.join(dir, '000.jpg')):
+        if os.path.exists(os.path.join(dir, '000.png')):
+            img_path = os.path.join(dir, '000.png')
+    else:
+        img_path = os.path.join(dir, '000.jpg')
+    img = cv2.imread(img_path)
+    img_copy = img.copy()
     cv2.imshow('Image', img_copy)
 
     last_point_index_set = set()
